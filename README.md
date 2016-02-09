@@ -1,0 +1,1 @@
+An initial experiment with the [FIDO Metadata Service](http://mds.fidoalliance.org) (MDS). Currently decodes and prints out the MDS and all its entries. Note that it currently doesn't do any verification. This may one day grow into a proper npm package for interfacing to the MDS.
