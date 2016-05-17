@@ -1,6 +1,6 @@
 {
   "name": "mds-client",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "FIDO Metadata Service (MDS) Client",
   "keywords": [
     "fido",
