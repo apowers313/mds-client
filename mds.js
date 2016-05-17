@@ -4,11 +4,13 @@ var request = require("request");
 var b64url = require("js-base64").Base64;
 var rs = require("jsrsasign"); // TODO: replace with node.js Crypto?
 var inspect = require("util").inspect;
+var async = require("async");
 
 function MdsClient(opt) {
     opt = opt ? _.cloneDeep(opt) : {};
     var defaults = {
-        url: "https://mds.fidoalliance.org"
+        url: "https://mds.fidoalliance.org",
+        parallelFetchLimit: 3
     };
     _.defaultsDeep(opt, defaults);
 
@@ -61,9 +63,9 @@ MdsClient.prototype.fetchToc = function() {
                 //     depth: null
                 // }));
                 this.toc = decoded;
-                return resolve (decoded);
+                return resolve(decoded);
             } else {
-                return reject (new Error ("Connection to MDS failed"));
+                return reject(new Error("Connection to MDS failed"));
             }
         }.bind(this));
     }.bind(this));
@@ -71,23 +73,23 @@ MdsClient.prototype.fetchToc = function() {
 
 MdsClient.prototype.fetchEntries = function() {
     return new Promise(function(resolve, reject) {
-        var entry, entryList = [], result = [];
+        var entry, entryList = [];
+        if (this.toc === undefined) {
+            this.fetchToc();
+        }
         var decoded = this.toc;
 
-        // yes, this could be optimized to be run in parallel; however...
-        // 1) this is not time-sensitive, and
-        // 2) it wouldn't be hard to unintentionally DoS the MDS server
-        for (i = 0; i < decoded.entries.length; i++) {
-            entry = decoded.entries[i];
+        var requestIterator = function(entry, cb) {
             entryList.push(entry.url);
 
-            console.log("Downloading entry:", i);
+            console.log("Downloading entry:", entry.url);
             request(entry.url, function(error, response, body) {
                 var idx = entryList.indexOf(response.request.href);
                 if (!error && response.statusCode == 200) {
-                    console.log("Entry", idx);
-                    console.log("Entry URL: ", response.request.href);
-                    console.log(JSON.stringify(b64url.decode(body)));
+                    var metadata = JSON.parse(b64url.decode(body));
+                    // console.log("Entry", idx);
+                    // console.log("Entry URL: ", response.request.href);
+                    // console.log(JSON.stringify(metadata));
                     // console.log (body);
 
                     // compare hash against cached hash; if hash has changed and status report hasn't, there's a problem...
@@ -100,25 +102,38 @@ MdsClient.prototype.fetchEntries = function() {
                     md.updateString(body);
                     var mdHex = md.digest();
                     if (mdHex !== entryHashHex) {
-                        throw new Error("hash was incorrect for entry " + idx + ": " + response.request.href);
+                        return cb(new Error("Hash was incorrect for entry " + idx + ": " + response.request.href));
                     }
+                    cb(null, metadata);
                 } else {
-                    console.log ("error fetching URL", response.request.href);
+                    return cb(new Error("Error fetching URL", response.request.href));
                 }
-            }.bind(this));
-        }
+            }.bind(this)); // TODO: simplify to have mapLimit() just call request?
+        }.bind(this);
+
+        console.log("doing async.mapLimit");
+        console.log (this.parallelFetchLimit);
+        async.mapLimit(decoded.entries, 5, requestIterator, function(err, results) {
+        // async.mapSeries(decoded.entries, requestIterator, function(err, results) {
+            console.log("Got ", results.length, " results.");
+            resolve(results);
+        });
     }.bind(this));
 };
 
-// var mc = new MdsClient();
-// mc.fetchToc()
-//     .then(function(toc) {
-//         console.log ("fetchToc done");
-//         return mc.fetchEntries();
-//     })
-//     .catch(function(err) {
-//         console.log ("ERROR:", err);
-//         throw (err);
-//     });
+var mc = new MdsClient();
+mc.fetchToc()
+    .then(function(toc) {
+        console.log("fetchToc done");
+        return mc.fetchEntries();
+    }.bind(this))
+    .then(function(entries) {
+        console.log (require("util").inspect(entries, {depth: null}));
+        console.log("Got ", entries.length, " entries.");
+    })
+    .catch(function(err) {
+        console.log("ERROR:", err);
+        throw (err);
+    });
 
 module.exports = MdsClient;
