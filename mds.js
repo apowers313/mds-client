@@ -110,18 +110,18 @@ MdsClient.prototype.fetchEntries = function() {
     }.bind(this));
 };
 
-var mc = new MdsClient();
-mc.fetchToc()
-    .then(function(toc) {
-        return mc.fetchEntries();
-    }.bind(this))
-    .then(function(entries) {
-        console.log (require("util").inspect(entries, {depth: null}));
-        console.log("Got ", entries.length, " entries.");
-    })
-    .catch(function(err) {
-        console.log("ERROR:", err);
-        throw (err);
-    });
+// var mc = new MdsClient();
+// mc.fetchToc()
+//     .then(function(toc) {
+//         return mc.fetchEntries();
+//     }.bind(this))
+//     .then(function(entries) {
+//         console.log (require("util").inspect(entries, {depth: null}));
+//         console.log("Got ", entries.length, " entries.");
+//     })
+//     .catch(function(err) {
+//         console.log("ERROR:", err);
+//         throw (err);
+//     });
 
 module.exports = MdsClient;
