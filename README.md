@@ -1,7 +1,7 @@
 # mds-client
-[FIDO Metadata Service (MDS)](https://fidoalliance.org/specs/fido-uaf-v1.0-ps-20141208/fido-uaf-metadata-service-v1.0-ps-20141208.html) Client
+FIDO Metadata Service (MDS) Client
 
-Retreives metadata table of contents (TOC) from MDS as well as any retreivable entries.
+Retreives metadata table of contents (TOC) from [MDS](https://fidoalliance.org/specs/fido-uaf-v1.0-ps-20141208/fido-uaf-metadata-service-v1.0-ps-20141208.html) as well as any retreivable entries.
 
 For more about FIDO, visit:
 https://fidoalliance.org
