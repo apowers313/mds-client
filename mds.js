@@ -95,7 +95,9 @@ MdsClient.prototype.fetchEntries = function() {
                     if (mdHex !== entryHashHex) {
                         return cb(new Error("Hash was incorrect for entry " + idx + ": " + response.request.href));
                     }
-                    cb(null, metadata);
+                    var ret = this.toc.entries[idx];
+                    ret.metadata = metadata;
+                    cb(null, ret);
                 } else {
                     return cb(new Error("Error fetching URL", response.request.href));
                 }
@@ -108,18 +110,18 @@ MdsClient.prototype.fetchEntries = function() {
     }.bind(this));
 };
 
-// var mc = new MdsClient();
-// mc.fetchToc()
-//     .then(function(toc) {
-//         return mc.fetchEntries();
-//     }.bind(this))
-//     .then(function(entries) {
-//         // console.log (require("util").inspect(entries, {depth: null}));
-//         console.log("Got ", entries.length, " entries.");
-//     })
-//     .catch(function(err) {
-//         console.log("ERROR:", err);
-//         throw (err);
-//     });
+var mc = new MdsClient();
+mc.fetchToc()
+    .then(function(toc) {
+        return mc.fetchEntries();
+    }.bind(this))
+    .then(function(entries) {
+        console.log (require("util").inspect(entries, {depth: null}));
+        console.log("Got ", entries.length, " entries.");
+    })
+    .catch(function(err) {
+        console.log("ERROR:", err);
+        throw (err);
+    });
 
 module.exports = MdsClient;
