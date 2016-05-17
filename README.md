@@ -1,13 +1,16 @@
 # mds-client
-FIDO Metadata Service (MDS) Client
+[FIDO Metadata Service (MDS)](https://fidoalliance.org/specs/fido-uaf-v1.0-ps-20141208/fido-uaf-metadata-service-v1.0-ps-20141208.html) Client
 
 Retreives metadata table of contents (TOC) from MDS as well as any retreivable entries.
 
-# Installation
+For more about FIDO, visit:
+https://fidoalliance.org
+
+## Installation
 
 `npm install mds-client`
 
-# API
+## API
 ``` js
 var MDSC = require("mds-client");
 var mdsClient = new MDSC(/* opt */);
